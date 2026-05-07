@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智能检测系统</title>
+    <script src="/static/js/vue.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        /* ========== 顶部导航栏 ========== */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 40px;
+            height: 64px;
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+
+        .nav-left {
+            width: 200px;
+            /* 左侧预留位置，可放Logo */
+        }
+
+        .nav-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: #333;
+            letter-spacing: 2px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav-right {
+            width: 200px;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+        }
+
+        .logout-btn {
+            padding: 8px 24px;
+            background: linear-gradient(135deg, #ff6b6b, #ee5a5a);
+            color: #fff;
+            border: none;
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .logout-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(238, 90, 90, 0.4);
+        }
+
+        /* ========== 主体内容区 ========== */
+        .main-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 100px 30px 50px;
+        }
+
+        /* 欢迎语/副标题 */
+        .welcome-section {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .welcome-section h2 {
+            color: #fff;
+            font-size: 28px;
+            font-weight: 300;
+            opacity: 0.95;
+        }
+
+        /* ========== 模型卡片网格 ========== */
+        .model-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 30px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .model-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 16px;
+            padding: 45px 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.35s cubic-bezier(0.25, 0.8, 0.25, 1);
+            box-shadow: 0 10px 35px rgba(0, 0, 0, 0.12);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .model-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, var(--card-color-1), var(--card-color-2));
+            transform: scaleX(0);
+            transition: transform 0.35s ease;
+        }
+
+        .model-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .model-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.18);
+        }
+
+        /* 卡片图标区域 */
+        .card-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 24px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            background: var(--card-bg);
+            transition: all 0.3s ease;
+        }
+
+        .model-card:hover .card-icon {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        /* 卡片标题 */
+        .card-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        /* 卡片描述（可选） */
+        .card-desc {
+            font-size: 13px;
+            color: #888;
+            line-height: 1.6;
+        }
+
+        /* 四个卡片的主题色 */
+        .model-card:nth-child(1) {
+            --card-color-1: #ff6b35;
+            --card-color-2: #f7c59f;
+            --card-bg: linear-gradient(135deg, #ff6b3522, #f7c59f22);
+        }
+        .model-card:nth-child(2) {
+            --card-color-1: #f093fb;
+            --card-color-2: #f5576c;
+            --card-bg: linear-gradient(135deg, #f093fb22, #f5576c22);
+        }
+        .model-card:nth-child(3) {
+            --card-color-1: #4facfe;
+            --card-color-2: #00f2fe;
+            --card-bg: linear-gradient(135deg, #4facfe22, #00f2fe22);
+        }
+        .model-card:nth-child(4) {
+            --card-color-1: #667eea;
+            --card-color-2: #764ba2;
+            --card-bg: linear-gradient(135deg, #667eea22, #764ba222);
+        }
+
+        /* 车牌检测卡片特殊效果 */
+        .model-card:first-child {
+            border: 2px solid transparent;
+            background-image: linear-gradient(white, white), linear-gradient(135deg, #ff6b35, #f7c59f);
+            background-origin: border-box;
+            background-clip: padding-box, border-box;
+        }
+
+        .model-card:first-child:hover {
+            border-color: #ff6b35;
+        }
+
+        /* Hot标签 */
+        .card-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: linear-gradient(135deg, #ff6b35, #ff8c42);
+            color: white;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(255, 107, 53, 0.4);
+        }
+
+        /* 响应式适配 */
+        @media (max-width: 768px) {
+            .model-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            .navbar {
+                padding: 0 20px;
+            }
+            .nav-left, .nav-right {
+                width: auto;
+            }
+            .nav-title {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div id="app">
+    <!-- 顶部导航栏 -->
+    <nav class="navbar">
+        <div class="nav-left">
+            <!-- 左侧预留：可放置 Logo -->
+        </div>
+        <div class="nav-title">智能检测</div>
+        <div class="nav-right">
+            <button class="logout-btn" @click="handleLogout">退出登录</button>
+        </div>
+    </nav>
+
+    <!-- 主体内容 -->
+    <div class="main-container">
+        <!-- 欢迎语 -->
+        <div class="welcome-section">
+            <h2>请选择检测模型</h2>
+        </div>
+
+        <!-- 四个模型卡片 -->
+        <div class="model-grid">
+            <div class="model-card"
+                 v-for="(model, index) in models"
+                 :key="index"
+                 @click="handleCardClick(model)">
+                <div class="card-badge" v-if="index === 0">HOT</div>
+                <div class="card-icon" :style="index === 0 ? 'font-size: 28px; font-weight: bold; color: #ff6b35; background: linear-gradient(135deg, #ff6b3522, #f7c59f22); border-radius: 20px;' : (index === 1 ? 'font-size: 28px; font-weight: bold; color: #f093fb; background: linear-gradient(135deg, #f093fb22, #f5576c22); border-radius: 20px;' : (index === 2 ? 'font-size: 28px; font-weight: bold; color: #4facfe; background: linear-gradient(135deg, #4facfe22, #00f2fe22); border-radius: 20px;' : ''))">
+                    <template v-if="index === 0">车牌识别</template>
+                    <template v-else-if="index === 1">骨折检测</template>
+                    <template v-else-if="index === 2">瓶盖检测</template>
+                    <template v-else>{{ model.icon }}</template>
+                </div>
+                <div class="card-title">{{ model.title }}</div>
+                <div class="card-desc">{{ model.desc }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    new Vue({
+        el: '#app',
+        data: {
+            // 四个模型配置（标题待定）
+            models: [
+                { title: '车牌检测', icon: '🚗', desc: '基于YOLO深度学习的车牌识别系统', path: '/detect_page/' },
+                { title: '骨折检测', icon: '🦴', desc: '基于深度学习的骨折识别系统', path: '/bone_page/' },
+                { title: '瓶盖检测', icon: '🥫', desc: '基于深度学习的瓶盖缺陷检测系统', path: '/bottlecap_page/' },
+                { title: '人脸识别', icon: '🔐', desc: '快速识别并验证用户身份', path: '/match_page/' }
+            ]
+        },
+        methods: {
+            // 卡片点击事件
+            handleCardClick(model) {
+                console.log('选择了模型:', model.title);
+                if(model.title == '车牌检测'){
+                    window.location.href = "/detect_page/";
+                } else if(model.title == '骨折检测'){
+                    window.location.href = "/bone_page/";
+                } else if(model.title == '瓶盖检测'){
+                    window.location.href = "/bottlecap_page/";
+                } else if(model.title == '人脸识别'){
+                    window.location.href = "/match_page/";
+                }
+                // TODO: 后续可跳转到对应模型的检测页面
+                // if (model.path) window.location.href = model.path;
+            },
+            // 退出登录
+            handleLogout() {
+                if (confirm('确定要退出登录吗？')) {
+                    console.log('用户退出登录');
+                    window.location.href = "/login/";
+                }
+            }
+        }
+    });
+</script>
+
+</body>
+</html>

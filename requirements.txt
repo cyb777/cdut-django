@@ -1,0 +1,7 @@
+django>=5.0
+pymysql
+opencv-python
+face-recognition
+ultralytics
+pillow
+numpy

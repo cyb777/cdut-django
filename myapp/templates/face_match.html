@@ -1,0 +1,191 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>人脸识别</title>
+    <script src="{% static "js/jquery.js" %}"></script>
+    <script src="{% static "js/vue.min.js" %}"></script>
+    <script src="{% static "js/faceUtil.js" %}"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: #fff;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 700px;
+            width: 100%;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .video-container {
+            position: relative;
+            width: 100%;
+            border-radius: 15px;
+            overflow: hidden;
+            background: #f5f5f5;
+            margin-bottom: 25px;
+        }
+
+        #video {
+            width: 100%;
+            display: block;
+        }
+
+        .video-tip {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background: rgba(0, 0, 0, 0.6);
+            color: #fff;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+        }
+
+        .btn-match {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-match:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(17, 153, 142, 0.4);
+        }
+
+        .btn-match:active {
+            transform: translateY(0);
+        }
+
+        .tips {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .tips h4 {
+            color: #555;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .tips ul {
+            color: #777;
+            font-size: 13px;
+            padding-left: 20px;
+        }
+
+        .tips li {
+            margin-bottom: 5px;
+        }
+
+        .icon-face {
+            font-size: 60px;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+<div id="myapp">
+    <div class="container">
+        <div class="header">
+            <div class="icon-face">👤</div>
+            <h1>人脸识别登录</h1>
+            <p>已完成人脸采集的用户可直接刷脸登录</p>
+        </div>
+
+        <div class="video-container">
+            <div class="video-tip">请将面部对准框内</div>
+            <div id="video"></div>
+        </div>
+
+        <button type="button" class="btn-match" @click="facematch">开始识别</button>
+
+        <div class="tips">
+            <h4>温馨提示：</h4>
+            <ul>
+                <li>请确保面部与已采集的人脸一致</li>
+                <li>光线充足的环境效果更佳</li>
+                <li>请正视摄像头</li>
+                <li>未采集人脸的用户请先进行人脸采集</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<script>
+    new Vue({
+        el:"#myapp",
+        methods:{
+            facematch(){
+                const code=faceUtile.getDecode();
+                console.log(code)
+                const params={
+                    image:code
+                }
+                $.ajax({
+                    url:"/face_match/",
+                    type:"post",
+                    contentType: "application/json",
+                    data: JSON.stringify(params),
+                    success:function (res){
+                        if(res.status==200){
+                            alert(res.msg)
+                            window.location.href="/main_page/"
+                        }else {
+                            alert(res.msg)
+                        }
+                    }
+                })
+            }
+        }
+    })
+    faceUtile.openVideo("video");
+    faceUtile.width=600;
+    faceUtile.height=500;
+</script>
+</body>
+</html>

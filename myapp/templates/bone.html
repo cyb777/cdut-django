@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>骨折识别</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        /* 顶部导航栏 */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 30px;
+            height: 64px;
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+
+        .nav-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .back-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: #fff;
+            border: none;
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .nav-title {
+            font-size: 22px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* 主体内容 */
+        .main-container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 100px 30px 50px;
+        }
+
+        /* 标题区域 */
+        .header-section {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header-section h1 {
+            color: #fff;
+            font-size: 36px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .header-section p {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 16px;
+        }
+
+        /* 图片区域 */
+        .image-section {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .image-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .image-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card-label {
+            display: inline-block;
+            padding: 6px 20px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: #fff;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 15px;
+        }
+
+        .image-box {
+            width: 400px;
+            height: 350px;
+            border: 3px dashed #ddd;
+            border-radius: 15px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #fafafa;
+            overflow: hidden;
+        }
+
+        .image-box:hover {
+            border-color: #667eea;
+            background: #f5f5ff;
+        }
+
+        .image-box .upload-icon {
+            font-size: 60px;
+            color: #ccc;
+            margin-bottom: 15px;
+            transition: color 0.3s ease;
+        }
+
+        .image-box:hover .upload-icon {
+            color: #667eea;
+        }
+
+        .image-box .upload-text {
+            color: #999;
+            font-size: 16px;
+        }
+
+        .image-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            border-radius: 12px;
+        }
+
+        /* 结果卡片特殊样式 */
+        .result-card {
+            position: relative;
+        }
+
+        .result-card .card-label {
+            background: linear-gradient(135deg, #ff6b35, #f7c59f);
+        }
+
+        .result-card .image-box {
+            border-color: #f7c59f;
+        }
+
+        /* 按钮区域 */
+        .button-section {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .predict-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 16px 50px;
+            background: linear-gradient(135deg, #ff6b35, #ff8c42);
+            color: #fff;
+            border: none;
+            border-radius: 30px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 6px 25px rgba(255, 107, 53, 0.4);
+        }
+
+        .predict-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 35px rgba(255, 107, 53, 0.5);
+        }
+
+        .predict-btn:active {
+            transform: translateY(-1px);
+        }
+
+        .predict-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        /* 提示信息 */
+        .tip-text {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 14px;
+            margin-top: 20px;
+        }
+
+        /* 响应式 */
+        @media (max-width: 900px) {
+            .image-section {
+                flex-direction: column;
+                align-items: center;
+            }
+            .image-box {
+                width: 350px;
+                height: 300px;
+            }
+        }
+
+        @media (max-width: 500px) {
+            .image-box {
+                width: 300px;
+                height: 250px;
+            }
+            .nav-title {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部导航栏 -->
+    <nav class="navbar">
+        <div class="nav-left">
+            <a href="/main_page/" class="back-btn">
+                <i class="fas fa-arrow-left"></i>
+                返回首页
+            </a>
+        </div>
+        <div class="nav-title">骨折识别系统</div>
+        <div style="width: 100px;"></div>
+    </nav>
+
+    <!-- 主体内容 -->
+    <div class="main-container">
+        <div class="header-section">
+            <h1>骨折检测</h1>
+            <p>上传X光片，系统将自动识别骨折位置</p>
+        </div>
+
+        <div class="image-section">
+            <!-- 原图上传 -->
+            <div class="image-card">
+                <span class="card-label">原图</span>
+                <div id="originalImageBox" class="image-box" onclick="getImg()">
+                    <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                    <span class="upload-text">点击上传图片</span>
+                </div>
+            </div>
+
+            <!-- 检测结果 -->
+            <div class="image-card result-card">
+                <span class="card-label">检测结果</span>
+                <div id="processedImageBox" class="image-box">
+                    <i class="fas fa-search upload-icon" style="color: #ff6b35;"></i>
+                    <span class="upload-text">没有检测到骨折！</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="button-section">
+            <button class="predict-btn" onclick="sendImg()">
+                <i class="fas fa-search"></i>
+                开始检测
+            </button>
+        </div>
+
+        <p class="tip-text">支持 JPG、PNG、DICOM 等常见医学影像格式</p>
+    </div>
+
+<script>
+    let img = null;
+
+    function getImg() {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'image/*';
+        input.onchange = e => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                document.getElementById('originalImageBox').innerHTML = `<img src="${event.target.result}" />`;
+                img = event.target.result;
+            };
+            reader.readAsDataURL(file);
+        };
+        input.click();
+    }
+
+    function sendImg() {
+        if (!img) {
+            alert("请先上传图片！");
+            return;
+        }
+
+        const requestData = {
+            image: img
+        };
+
+        fetch('/bone_detect/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(requestData),
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log("完整响应:", data);
+            if (data.status === 200) {
+                document.getElementById('processedImageBox').innerHTML = `<img src="${data.prossed_image_url}" />`;
+            } else {
+                alert(data.msg || "检测失败");
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert("请求失败，请检查网络连接");
+        });
+    }
+</script>
+</body>
+</html>

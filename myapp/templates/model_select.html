@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>图像识别系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 30px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 40px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+            max-width: 1600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 28px;
+            font-weight: 600;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            position: relative;
+            cursor: pointer;
+            padding: 8px 15px;
+            border-radius: 10px;
+            transition: background 0.3s;
+        }
+
+        .user-info:hover {
+            background: rgba(102, 126, 234, 0.1);
+        }
+
+        .user-avatar {
+            width: 45px;
+            height: 45px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .user-name {
+            color: #333;
+            font-weight: 500;
+            font-size: 16px;
+        }
+
+        .user-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 10px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+            min-width: 200px;
+            overflow: hidden;
+            display: none;
+            z-index: 100;
+        }
+
+        .user-dropdown.show {
+            display: block;
+        }
+
+        .dropdown-header {
+            padding: 15px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-weight: 600;
+        }
+
+        .dropdown-item {
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .dropdown-item:hover {
+            background: #f0f4ff;
+        }
+
+
+
+        .main-container {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            grid-template-rows: 1fr;
+            gap: 30px;
+            max-width: 1600px;
+            margin: 0 auto;
+            align-items: stretch;
+        }
+
+        .left-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 16px;
+            padding: 25px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .card-title {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #f0f0f0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+        }
+
+        .card-title span {
+            font-size: 24px;
+        }
+
+        .type-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .type-card {
+            position: relative;
+        }
+
+        .type-card input[type="radio"] {
+            display: none;
+        }
+
+        .type-card label {
+            display: flex;
+            align-items: center;
+            padding: 15px 20px;
+            background: #f8f9fa;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .type-card label:hover {
+            border-color: #667eea;
+            background: #f0f4ff;
+            transform: translateX(5px);
+        }
+
+        .type-card input[type="radio"]:checked + label {
+            border-color: #667eea;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.15) 0%, rgba(118, 75, 162, 0.15) 100%);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .type-icon {
+            font-size: 32px;
+            margin-right: 15px;
+        }
+
+        .type-name {
+            font-weight: 600;
+            color: #333;
+            font-size: 16px;
+        }
+
+        .right-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .upload-area {
+            border: 2px dashed #ccc;
+            border-radius: 12px;
+            padding: 40px 30px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            background: #fafafa;
+        }
+
+        .upload-area:hover {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+
+        .upload-area.dragover {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.1);
+        }
+
+        .upload-icon {
+            font-size: 50px;
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .upload-text {
+            color: #666;
+            font-size: 15px;
+            margin-bottom: 8px;
+        }
+
+        .upload-hint {
+            color: #999;
+            font-size: 13px;
+        }
+
+        .preview-container {
+            margin-top: 20px;
+            display: none;
+        }
+
+        .preview-container.show {
+            display: block;
+        }
+
+        .preview-image {
+            max-width: 100%;
+            max-height: 250px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-container {
+            margin-top: 20px;
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #666;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .result-container {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .result-placeholder {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #999;
+            min-height: 300px;
+        }
+
+        .result-placeholder span {
+            font-size: 60px;
+            margin-bottom: 15px;
+        }
+
+        .result-placeholder p {
+            font-size: 16px;
+        }
+
+        .result-content {
+            display: none;
+        }
+
+        .result-content.show {
+            display: block;
+        }
+
+        .result-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 16px 25px;
+            border-radius: 12px 12px 0 0;
+            font-weight: 600;
+            font-size: 18px;
+        }
+
+        .result-body {
+            padding: 25px;
+            background: #f9f9f9;
+            border-radius: 0 0 12px 12px;
+            flex: 1;
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+        }
+
+        .result-label {
+            color: #666;
+            font-weight: 500;
+            font-size: 15px;
+        }
+
+        .result-value {
+            color: #333;
+            font-weight: 600;
+            font-size: 15px;
+        }
+
+        .confidence-badge {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 15px;
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 50px;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading p {
+            color: #666;
+            font-size: 16px;
+        }
+
+        @media (max-width: 1024px) {
+            .main-container {
+                grid-template-columns: 1fr;
+            }
+            .type-grid {
+                flex-direction: row;
+                flex-wrap: wrap;
+            }
+            .type-card {
+                flex: 1;
+                min-width: 150px;
+            }
+            .type-card label {
+                flex-direction: column;
+                text-align: center;
+                padding: 20px;
+            }
+            .type-icon {
+                margin-right: 0;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+        <div class="header">
+        <h1>图像识别系统</h1>
+        <div class="user-info" id="userInfo">
+            <div class="user-avatar" id="userAvatar">张</div>
+            <span class="user-name" id="userName">张三</span>
+            <span style="color: #999; font-size: 12px;">▼</span>
+            <div class="user-dropdown" id="userDropdown">
+                <div class="dropdown-item" id="logoutBtn">
+                    <span>🚪</span>
+                    <span>退出登录</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <div class="left-panel">
+            <div class="card">
+                <div class="card-title">
+                    <span>&#128268;</span>
+                    选择识别类型
+                </div>
+                <div class="type-grid">
+                    <div class="type-card">
+                        <input type="radio" id="type1" name="type" value="fracture">
+                        <label for="type1">
+                            <div class="type-icon">&#129504;</div>
+                            <div class="type-name">骨折检测</div>
+                        </label>
+                    </div>
+                    <div class="type-card">
+                        <input type="radio" id="type2" name="type" value="plate">
+                        <label for="type2">
+                            <div class="type-icon">&#128663;</div>
+                            <div class="type-name">车牌识别</div>
+                        </label>
+                    </div>
+                    <div class="type-card">
+                        <input type="radio" id="type3" name="type" value="plant">
+                        <label for="type3">
+                            <div class="type-icon">&#127807;</div>
+                            <div class="type-name">植物识别</div>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">
+                    <span>&#128247;</span>
+                    上传图片
+                </div>
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-icon">&#128257;</div>
+                    <div class="upload-text">点击或拖拽图片到此处上传</div>
+                    <div class="upload-hint">支持 JPG、PNG 格式</div>
+                </div>
+                <input type="file" id="fileInput" accept="image/jpeg,image/png">
+                <div class="preview-container" id="previewContainer">
+                    <img id="previewImage" class="preview-image" alt="预览图片">
+                </div>
+                <div class="btn-container">
+                    <button class="btn btn-primary" id="recognizeBtn" disabled>开始识别</button>
+                    <button class="btn btn-secondary" id="clearBtn">清除</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="card result-container">
+            <div class="card-title">
+                <span>&#128100;</span>
+                识别结果
+            </div>
+            <div class="result-placeholder" id="resultPlaceholder">
+                <span>&#128269;</span>
+                <p>请上传图片并选择识别类型</p>
+            </div>
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>正在识别中，请稍候...</p>
+            </div>
+            <div class="result-content" id="resultContent">
+                <div class="result-header">识别完成</div>
+                <div class="result-body">
+                    <div class="result-item">
+                        <span class="result-label">识别状态</span>
+                        <span class="result-value" id="statusValue">成功</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">识别类型</span>
+                        <span class="result-value" id="typeValue">-</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">识别结果</span>
+                        <span class="result-value" id="resultValue">-</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">置信度</span>
+                        <span class="confidence-badge" id="confidenceValue">-</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">识别耗时</span>
+                        <span class="result-value" id="timeValue">-</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const typesData = {
+            fracture: { name: '骨折检测', demoResult: '未检测到骨折' },
+            plate: { name: '车牌识别', demoResult: '川A12345' },
+            plant: { name: '植物识别', demoResult: '月季花 (Rosa chinensis)' }
+        };
+
+        const typeRadios = document.querySelectorAll('input[name="type"]');
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const previewContainer = document.getElementById('previewContainer');
+        const previewImage = document.getElementById('previewImage');
+        const recognizeBtn = document.getElementById('recognizeBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const resultPlaceholder = document.getElementById('resultPlaceholder');
+        const resultContent = document.getElementById('resultContent');
+        const loading = document.getElementById('loading');
+
+        const userInfo = document.getElementById('userInfo');
+        const userDropdown = document.getElementById('userDropdown');
+        const logoutBtn = document.getElementById('logoutBtn');
+
+        userInfo.addEventListener('click', (e) => {
+            e.stopPropagation();
+            userDropdown.classList.toggle('show');
+        });
+
+        logoutBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (confirm('确定要退出登录吗？')) {
+                window.location.href = '/logout/';
+            }
+            userDropdown.classList.remove('show');
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!userDropdown.contains(e.target) && !userInfo.contains(e.target)) {
+                userDropdown.classList.remove('show');
+            }
+        });
+
+        function checkCanRecognize() {
+            const typeSelected = document.querySelector('input[name="type"]:checked');
+            recognizeBtn.disabled = !(typeSelected && previewContainer.classList.contains('show'));
+        }
+
+        typeRadios.forEach(radio => {
+            radio.addEventListener('change', checkCanRecognize);
+        });
+
+        uploadArea.addEventListener('click', () => fileInput.click());
+
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            if (e.dataTransfer.files.length > 0) {
+                handleFile(e.dataTransfer.files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFile(e.target.files[0]);
+            }
+        });
+
+        function handleFile(file) {
+            if (!file.type.match('image.*')) {
+                alert('请上传图片文件！');
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                previewImage.src = e.target.result;
+                previewContainer.classList.add('show');
+                checkCanRecognize();
+            };
+            reader.readAsDataURL(file);
+        }
+
+        clearBtn.addEventListener('click', () => {
+            fileInput.value = '';
+            previewImage.src = '';
+            previewContainer.classList.remove('show');
+            recognizeBtn.disabled = true;
+            resultContent.classList.remove('show');
+            resultPlaceholder.style.display = 'flex';
+            loading.classList.remove('show');
+        });
+
+        recognizeBtn.addEventListener('click', () => {
+            const selectedType = document.querySelector('input[name="type"]:checked');
+
+            if (!selectedType) {
+                alert('请先选择识别类型！');
+                return;
+            }
+
+            resultPlaceholder.style.display = 'none';
+            resultContent.classList.remove('show');
+            loading.classList.add('show');
+
+            setTimeout(() => {
+                loading.classList.remove('show');
+                resultContent.classList.add('show');
+
+                const typeData = typesData[selectedType.value];
+
+                document.getElementById('statusValue').textContent = '成功';
+                document.getElementById('typeValue').textContent = typeData.name;
+                document.getElementById('resultValue').textContent = typeData.demoResult;
+                document.getElementById('confidenceValue').textContent = (Math.random() * 10 + 90).toFixed(1) + '%';
+                document.getElementById('timeValue').textContent = (Math.random() * 0.5 + 0.1).toFixed(2) + 's';
+            }, 2000);
+        });
+    </script>
+</body>
+</html>

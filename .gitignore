@@ -22,6 +22,9 @@ media/
 faceImages/
 myapp/static/imgs/
 
+# Project docs (协作白名单文档,本地维护,不进版本库)
+docs/
+
 # OS
 .DS_Store
 Thumbs.db
